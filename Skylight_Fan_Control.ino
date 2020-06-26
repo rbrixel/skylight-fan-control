@@ -6,7 +6,7 @@
  * 
  * Hardware used:
  * --------------
- * Arduino Pro Mini Clone
+ * Arduino Pro Mini Clone (in final version a nano or esp32)
  * internal EEPROM
  * DHT22 temperature and humidity sensor
  * 3x Push-Buttons with external Pull-Up-Resistors
@@ -52,7 +52,7 @@ const long nbcInterval = 2000; // interval in milliseconds (1000 milliseconds = 
 #define TMENU   6 // Button Menu
 #define TPLUS   5 // Button Plus
 #define TMINUS  3 // Button Minus (Pin 4 doesn't work)
-#define TASTERENTPRELLUNG 200 // button-debounce; value in milliseconds
+#define BTNDEBOUNCE 200 // button-debounce; value in milliseconds
 int posMenu = 0;      // var for menu-position
 float fltHumi = 0.0;  // var for humidity
 float fltTemp = 0.0;  // var for temperature
@@ -69,7 +69,7 @@ void setup() {
   eFanSMax = EEPROM.read(EFANSMAX);
   eFanTMax = EEPROM.read(EFANTMAX);
 
-  // if on first startup EEPROM-value empty (e.g. 255) then set deflaut values and store it in EEPROM
+  // if on first startup EEPROM-value empty (e.g. 255) then set default values and store it in EEPROM
   if (eFanTemp == 255) {
     eFanTemp = 25;
     EEPROM.update(EFANTEMP, eFanTemp);
@@ -106,6 +106,9 @@ void setup() {
   pinMode(TMENU, INPUT);
   pinMode(TPLUS, INPUT);
   pinMode(TMINUS, INPUT);
+  // TODO: Check internal pullup-resistors, if they work properly
+  // Use instead: pinMode (pinX, INPUT_PULLUP);
+  // and remove external pullup-resistors
 
   // initialize i2c-oled
   if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C)) { // Address 0x3C for 128x32
@@ -149,7 +152,7 @@ void loop() {
     EEPROM.update(EFANSMAX, eFanSMax);
     EEPROM.update(EFANTMAX, eFanTMax);
     
-    delay(TASTERENTPRELLUNG);
+    delay(BTNDEBOUNCE);
   }
 
   // --[ menu-output ]--
@@ -190,7 +193,7 @@ void loop() {
       eFanTemp = 50;
     }
 
-    delay(TASTERENTPRELLUNG); // debounce
+    delay(BTNDEBOUNCE); // debounce
   }
 }
 
