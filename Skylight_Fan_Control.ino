@@ -19,12 +19,12 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // ==[ CONFIG: EEPROM ]==
 #include <EEPROM.h>
-#define EFANTEMP  0 // Temperatur einstellen, wann Lüfter anspringt
-#define EFANTIME  1 // Zeit, wie lange Lüfter läuft (Minuten)
-#define EFANSMAX  2 // Maximale Drehzahl (Prozent)
-#define EFANTMAX  3 // Zeit, wie lange Lüfter braucht, um auf volle Drehzahl zu kommen (Minuten)
+#define EFANTEMP  0 // Set temperature when fan should start
+#define EFANTIME  1 // duration in minutes how long the fan should spin
+#define EFANSMAX  2 // max rpm in percent
+#define EFANTMAX  3 // duration how long it took the fan to max rpm
 
-// ==[ CONFIG: OLED-Display über i2c ]==
+// ==[ CONFIG: OLED-Display over i2c ]==
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -32,7 +32,7 @@ DHT dht(DHTPIN, DHTTYPE);
 #define SCREEN_WIDTH  128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 #define OLED_RESET    4 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define OLED_I2C      0x3C // i2c-Adresse des Displays
+#define OLED_I2C      0x3C // i2c-address of display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // ==[ CONFIG: Timer für Non-Blocking-Code ]==
