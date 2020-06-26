@@ -9,3 +9,7 @@ Create a skylight-venting with an arduino, a mosfet and old pc fans.
 * linear-voltage-regulator 7805 with two 100nF and two 100uF capacitors
 
 Feel free to contact me, if you want to support the project :+1:
+
+## Schematic
+
+![foo](/https://github.com/rbrixel/skylight-fan-control/raw/master/Schematic_FanControl_2020-06-26_11-45-45.png "Schematic")
