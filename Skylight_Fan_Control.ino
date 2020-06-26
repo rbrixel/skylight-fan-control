@@ -87,7 +87,18 @@ void setup() {
     EEPROM.update(EFANTMAX, eFanTMax);
   }
 
-  // start DHTxx-sensor
+  // Set the pwm-frequency
+  // with standard prescaler you can hear the pwm-frenquency from the fans
+  TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM01) | _BV(WGM00); // Fast PWM
+  TCCR0B = _BV(CS01); // Prescaler 8; lowest prescaler near standard value (1) without sounding fan
+  // "...To adjust millis(), micros(), delay(),... accordingly,
+  // You can modify a line in the wiring.c function in the Arduino program files
+  // hardware\arduino\cores\arduino\wiring.c
+  // #define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(PRESCALE_FACTOR* 256))
+  // #define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(8 * 256))
+  // ..."; Source: https://playground.arduino.cc/Main/TimerPWMCheatsheet/
+
+  // Start DHTxx-sensor
   dht.begin();
 
   // initialize pinmodes (input, output, pullup, pulldown, ...)
