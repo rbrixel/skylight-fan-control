@@ -2,7 +2,7 @@
 Create a skylight-venting with an arduino, a mosfet and old pc fans.
 
 ## Hardware used
-* Arduino pro mini clone with a ftdi-usb-serial for uploading code
+* Arduino pro mini clone with a ftdi-usb-serial for uploading code (in the final version it should be a nano)
 * DHT22 temperature- and humidity-sensor (more headroom than the DTH11); 10k resistor between VCC and DATA
 * 3x Push-Buttons with external 10k pull-down-resistors
 * 0.96 inch OLED-i2c-Display (128 * 32 px)
