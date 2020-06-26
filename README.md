@@ -12,4 +12,4 @@ Feel free to contact me, if you want to support the project :+1:
 
 ## Schematic
 
-![foo](/https://github.com/rbrixel/skylight-fan-control/raw/master/Schematic_FanControl_2020-06-26_11-45-45.png "Schematic")
+![Sschematic](https://github.com/rbrixel/skylight-fan-control/raw/master/Schematic_FanControl_2020-06-26_11-45-45.png "Schematic")
