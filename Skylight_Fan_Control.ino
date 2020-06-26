@@ -4,7 +4,15 @@
  * 26.06.2020 - v0.2
  * 09.02.2020 - v0.1
  * 
- * Used Libs:
+ * Hardware used:
+ * --------------
+ * Arduino Pro Mini Clone
+ * internal EEPROM
+ * DHT22 temperature and humidity sensor
+ * 3x Push-Buttons with external Pull-Up-Resistors
+ * i2c-OLED-Display 0.96 inch (128 * 32 px)
+ * 
+ * Libs used:
  * ----------
  * DHT sensor library v1.3.10 by Adafruit
  * Adafruit SSD1306 v2.3.0 by Adafruit
@@ -35,32 +43,33 @@ DHT dht(DHTPIN, DHTTYPE);
 #define OLED_I2C      0x3C // i2c-address of display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// ==[ CONFIG: Timer für Non-Blocking-Code ]==
-unsigned long nbcPreviousMillis = 0; // Hält den letzten "Veröffentlichungs"-Zeitstempel
-const long nbcInterval = 2000; // Interval in Millisekunden (1.000 Millisekunden = 1 Sekunde)
+// ==[ CONFIG: Timer for Non-Blocking-Code ]==
+unsigned long nbcPreviousMillis = 0; // holds last timestamp
+const long nbcInterval = 2000; // interval in milliseconds (1000 milliseconds = 1 second)
 
-// ==[ CONFIG: EIGENE VARIABLEN ]==
-#define LEDINT  13 // Interne LED an "D13"
-#define TMENU   6 // Taster Menü
-#define TPLUS   5 // Taster Plus
-#define TMINUS  3 // Taster Minus; Pin 4 geht nicht
-#define TASTERENTPRELLUNG 200 // Wert in Millisekunden
-int posMenu = 0;      // Zwischenspeicher für Menü-Position
-float fltHumi = 0.0;  // Zwischenspeicehr für Luftfeuchte
-float fltTemp = 0.0;  // Zwischenspeicher für Temperatur
-int eFanTemp = 0;     // Zwischenspeicher für EEPROM-Wert; Temperatur einstellen, wann Lüfter anspringt
-int eFanTime = 0;     // Zwischenspeicher für EEPROM-Wert; Zeit, wie lange Lüfter läuft (Minuten)
-int eFanSMax = 0;     // Zwischenspeicher für EEPROM-Wert; Maximale Drehzahl (Prozent)
-int eFanTMax = 0;     // Zwischenspeicher für EEPROM-Wert; Zeit, wie lange Lüfter braucht, um auf volle Drehzahl zu kommen (Minuten)
+// ==[ CONFIG: OWN VARS ]==
+#define LEDINT  13 // internal LED on "D13"
+#define TMENU   6 // Button Menu
+#define TPLUS   5 // Button Plus
+#define TMINUS  3 // Button Minus (Pin 4 doesn't work)
+#define TASTERENTPRELLUNG 200 // button-debounce; value in milliseconds
+int posMenu = 0;      // var for menu-position
+float fltHumi = 0.0;  // var for humidity
+float fltTemp = 0.0;  // var for temperature
+int eFanTemp = 0;     // var for EEPROM-value; Set temperature when fan should start
+int eFanTime = 0;     // var for EEPROM-value; duration in minutes how long the fan should spin
+int eFanSMax = 0;     // var for EEPROM-value; max rpm in percent
+int eFanTMax = 0;     // var for EEPROM-value; duration how long it took the fan to max rpm
 
 // ==[ SETUP-FUNCTION ]==
 void setup() {
-  // EEPROM-Werte auslesen
+  // read EEPROM values
   eFanTemp = EEPROM.read(EFANTEMP);
   eFanTime = EEPROM.read(EFANTIME);
   eFanSMax = EEPROM.read(EFANSMAX);
   eFanTMax = EEPROM.read(EFANTMAX);
-  
+
+  // if on first startup EEPROM-value empty (e.g. 255) then set deflaut values and store it in EEPROM
   if (eFanTemp == 255) {
     eFanTemp = 25;
     EEPROM.update(EFANTEMP, eFanTemp);
@@ -78,16 +87,16 @@ void setup() {
     EEPROM.update(EFANTMAX, eFanTMax);
   }
 
-  // DHT22-Sensor starten
+  // start DHTxx-sensor
   dht.begin();
 
-  // Pin-Richtung setzen
-  pinMode(LEDINT, OUTPUT); // Interne LED aktivieren
+  // initialize pinmodes (input, output, pullup, pulldown, ...)
+  pinMode(LEDINT, OUTPUT); // activate internal led
   pinMode(TMENU, INPUT);
   pinMode(TPLUS, INPUT);
   pinMode(TMINUS, INPUT);
 
-  // OLED starten
+  // initialize i2c-oled
   if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
@@ -97,33 +106,33 @@ void setup() {
 }
 
 void loop() {
-  // Non-blocking-Code; wird nur ausgeführt, wenn Intervall erreicht wurde
-  unsigned long nbcCurrentMillis = millis(); // Aktuellen Timestamp holen
+  // Non-blocking-Code; only executed when interval is reached
+  unsigned long nbcCurrentMillis = millis(); // get actual timestamp
   if (nbcCurrentMillis - nbcPreviousMillis >= nbcInterval) {
     nbcPreviousMillis = nbcCurrentMillis;
     
-    // Lese Sensor 1 (DHT22) ein:
+    // read DHTxx-sensor
     fltHumi = dht.readHumidity();
     fltTemp = dht.readTemperature();
   }
 
-  // ----- Ab hier Echtzeit-Code -----
+  // ----- Here starts the realtimecode -----
 
-  // --[ Menü-Positionszähler ]--
+  // --[ menu-positionscounter ]--
   int intTMenu = 0;
   intTMenu = digitalRead(TMENU);
   if (intTMenu == 1) {
     posMenu += 1;
-    // 0 = Generelle Anzeige
-    // 1 = Temperatur einstellen, wann Lüfter anspringt
-    // 2 = Zeit, wie lange Lüfter läuft (Minuten)
-    // 3 = Maximale Drehzahl (Prozent)
-    // 4 = Zeit, wie lange Lüfter braucht, um auf volle Drehzahl zu kommen
-    if (posMenu > 4) { // Überlauf
+    // 0 = main-display
+    // 1 = Set temperature when fan should start
+    // 2 = duration in minutes how long the fan should spin
+    // 3 = max rpm in percent
+    // 4 = duration how long it took the fan to max rpm
+    if (posMenu > 4) { // overflow
       posMenu = 0;
     }
 
-    // EEPROM aktualisieren beim Drücken der Menü-Taste
+    // update EEPROm if menu is pressed
     EEPROM.update(EFANTEMP, eFanTemp);
     EEPROM.update(EFANTIME, eFanTime);
     EEPROM.update(EFANSMAX, eFanSMax);
@@ -132,7 +141,7 @@ void loop() {
     delay(TASTERENTPRELLUNG);
   }
 
-  // --[ Menü-Ausgabe ]--
+  // --[ menu-output ]--
   switch (posMenu) {
     case 0:
       menuMain();
@@ -149,7 +158,7 @@ void loop() {
       break;
   }
 
-  // --[ Temperatur einstellen ]--
+  // --[ Set temperature ]--
   if (posMenu == 1) {
     int intTPlus = 0;
     intTPlus = digitalRead(TPLUS);
@@ -163,14 +172,14 @@ void loop() {
       eFanTemp -= 1;
     }
 
-    if (eFanTemp < 10) {
+    if (eFanTemp < 10) { // underflow
       eFanTemp = 10;
     }
-    if (eFanTemp > 50) {
+    if (eFanTemp > 50) { // overflow
       eFanTemp = 50;
     }
 
-    delay(TASTERENTPRELLUNG);
+    delay(TASTERENTPRELLUNG); // debounce
   }
 }
 
@@ -179,14 +188,14 @@ void menuHeader() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
 
-  // Menü-Position ausgeben:
+  // output the menu-header
   display.setCursor(120, 0);
   display.print(posMenu);
 }
 
 void menuDrawHead(String strTitle) {
   display.setCursor(0, 0);
-  display.print(strTitle); // Maximal 21 Zeichen und 3 Zeilen
+  display.print(strTitle); // max 21 chars and 3 lines
   display.drawLine(0, 8, display.width()-1, 8, SSD1306_WHITE);
 }
 
