@@ -1,15 +1,17 @@
-# skylight-fan-control
-Create a skylight-venting with an arduino, a mosfet and old pc fans.
+Info: English below
 
-## Hardware used
-* Arduino pro mini clone with a ftdi-usb-serial for uploading code (in the final version it should be a nano)
-* DHT22 temperature- and humidity-sensor (more headroom than the DTH11); 10k resistor between VCC and DATA
-* 3x Push-Buttons with external 10k pull-down-resistors
-* 0.96 inch OLED-i2c-Display (128 * 32 px)
-* linear-voltage-regulator 7805 with two 100nF and two 100uF capacitors
+## Repo geändert (DE)
 
-Feel free to contact me, if you want to support the project :+1:
+Ich bin weitergezogen... Du findest mich nun auf https://github.com/rbrixel/opensrv
 
-## Schematic
+Hier findest Du auch alle weiteren Infos, Quellcodes und Grafiken rund um mein OpenSRV-Projekt!
 
-![Sschematic](https://github.com/rbrixel/skylight-fan-control/raw/master/Schematic_FanControl_2020-06-26_11-45-45.png "Schematic")
+Viel Spaß wünscht Dir René von CampingTech.de
+
+## Repo changed (EN)
+
+I moved on ... You can now find me on https://github.com/rbrixel/opensrv
+
+Here you will also find all other information, source codes and graphics related to my OpenSRV project!
+
+René from CampingTech.de wishes you a lot of fun
